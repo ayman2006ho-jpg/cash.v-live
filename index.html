@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' file: https://fonts.googleapis.com https://fonts.gstatic.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cashgo-telemetry-default-rtdb.firebaseio.com https://worldtimeapi.org https://timeapi.io; script-src 'self' 'unsafe-inline' 'unsafe-eval' file: https://cdn.jsdelivr.net https://cdn.sheetjs.com https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' file: https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' data: file: https://fonts.gstatic.com https://cdnjs.cloudflare.com; img-src 'self' data: blob: file:; connect-src 'self' file: https://cdn.jsdelivr.net https://cashgo-telemetry-default-rtdb.firebaseio.com https://worldtimeapi.org https://timeapi.io https://raw.githubusercontent.com;">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <title>كاش جو - Cash Go</title>
+  <meta name="description" content="نظام كاش جو المتكامل لإدارة المبيعات والمحافظ الإلكترونية والمدفوعات">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2222%22 fill=%22%23e60012%22/><text x=%2250%22 y=%2268%22 font-size=%2255%22 font-family=%22Cairo, sans-serif%22 font-weight=%2290%22 fill=%22white%22 text-anchor=%22middle%22>Go</text></svg>">
+  <!-- Apply saved theme BEFORE render to prevent flash -->
+  <script>
+    (function(){
+      if(localStorage.getItem('vc_theme')==='light')
+        document.documentElement.classList.add('light');
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+  <link rel="stylesheet" href="style.css?v=1.4.1">
+</head>
+<body>
+
+  <!-- ===== UPDATE NOTIFICATION BANNER ===== -->
+  <div id="update-banner" role="alert" aria-live="polite">
+    <div class="update-banner-inner">
+      <div class="update-banner-glow"></div>
+      <div class="update-banner-left">
+        <div class="update-banner-icon">
+          <i class="fas fa-arrow-up-from-bracket"></i>
+        </div>
+        <div class="update-banner-text">
+          <div class="update-banner-title">
+            <span>🎉 يوجد تحديث جديد متاح!</span>
+            <span class="update-version-badge" id="update-version-badge">v1.4.5</span>
+          </div>
+          <div class="update-banner-notes" id="update-banner-notes"></div>
+        </div>
+      </div>
+      <div class="update-banner-actions">
+        <button class="btn-update-now" id="btn-update-now">
+          <i class="fas fa-rotate-right"></i>
+          <span>تحديث الآن</span>
+        </button>
+        <button class="btn-update-later" id="btn-update-later">
+          <i class="fas fa-clock"></i>
+          <span>لاحقًا</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOGIN PAGE ===== -->
+  <div id="pg-login">
+    <div class="login-bg-shapes">
+      <div class="shape s1"></div>
+      <div class="shape s2"></div>
+      <div class="shape s3"></div>
+    </div>
+    <div class="login-card">
+      <div class="login-logo">
+        <div class="logo-icon"><i class="fas fa-wallet"></i></div>
+        <h1>كاش جو Cash Go</h1>
+        <p>نظام إدارة المبيعات والمحافظ</p>
+        <div class="login-version" style="font-size:12px; color:var(--text2); margin-top:6px;" id="login-version-display"></div>
+      </div>
+      <div id="form-login">
+        <div class="field-group">
+          <label>اسم المستخدم</label>
+          <div class="field-wrap">
+            <i class="fas fa-user field-icon"></i>
+            <input type="text" id="inp-username" placeholder="أدخل اسم المستخدم" autocomplete="username">
+          </div>
+        </div>
+        <div class="field-group">
+          <label>كلمة المرور</label>
+          <div class="field-wrap">
+            <i class="fas fa-lock field-icon"></i>
+            <input type="password" id="inp-password" placeholder="أدخل كلمة المرور" autocomplete="current-password">
+            <button type="button" class="btn-eye" id="btn-toggle-eye">
+              <i class="fas fa-eye" id="eye-icon"></i>
+            </button>
+          </div>
+        </div>
+        <div id="login-err" class="login-err" style="display:none"></div>
+        <button type="button" id="btn-login-submit" class="btn-login-submit">
+          <i class="fas fa-sign-in-alt"></i>
+          <span>تسجيل الدخول</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== MAIN APP ===== -->
+  <div id="pg-app" style="display:none">
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sb-header">
+        <div class="sb-logo">
+          <div class="sb-logo-icon"><i class="fas fa-wallet"></i></div>
+          <span>كاش جو Cash Go</span>
+        </div>
+        <button class="sb-close-btn" id="btn-close-sidebar"><i class="fas fa-times"></i></button>
+      </div>
+
+      <nav class="sb-nav" id="sb-nav"></nav>
+
+      <div class="sb-footer">
+        <div class="sb-branch-info" id="sb-branch-info"></div>
+        <div class="sb-version" style="text-align:center; font-size:12px; color:var(--text2); margin-bottom:10px;" id="sb-version-display"></div>
+        <button class="btn-logout" id="btn-logout">
+          <i class="fas fa-sign-out-alt"></i>
+          <span>تسجيل الخروج</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="app-main" id="app-main">
+      <header class="topbar">
+        <div class="topbar-right">
+          <button class="btn-menu" id="btn-menu"><i class="fas fa-bars"></i></button>
+          <div class="page-title" id="page-title">لوحة التحكم</div>
+        </div>
+        <div class="topbar-left">
+          <div class="branch-select-wrap" id="branch-select-wrap">
+            <i class="fas fa-store"></i>
+            <select id="sel-branch"></select>
+          </div>
+          <div class="clock" id="clock"></div>
+          <button class="btn-theme btn-backup-alert" id="btn-backup-alert" title="يلزم منح صلاحية الوصول لمجلد النسخ الاحتياطي التلقائي" style="display:none;">
+            <i class="fas fa-database"></i>
+          </button>
+          <button class="btn-theme" id="btn-theme" title="تغيير المظهر">
+            <i class="fas fa-sun" id="theme-icon"></i>
+          </button>
+          <div class="topbar-user">
+            <i class="fas fa-user-circle"></i>
+            <span id="topbar-username"></span>
+          </div>
+        </div>
+      </header>
+
+      <div class="page-content" id="page-content"></div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal-overlay" class="modal-overlay" style="display:none">
+    <div class="modal-box" id="modal-box"></div>
+  </div>
+
+  <!-- Sub-Modal for Cash Counter -->
+  <div id="submodal-overlay" class="modal-overlay" style="display:none; z-index:1000;">
+    <div class="modal-box" id="submodal-box" style="max-width:400px;"></div>
+  </div>
+
+  <!-- Toast -->
+  <div id="toast-wrap"></div>
+
+  <!-- ملف الإصدار — عدّله لما تطلع إصدار جديد -->
+  <script src="version.js?v=1.4.5"></script>
+  <script src="app.js?v=1.4.5"></script>
+  <script>
+    // Service Worker Registration — only when running on HTTP/HTTPS web servers
+    if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js?v=1.4.5').then(reg => {
+          console.log('[SW] Registered:', reg.scope);
+          reg.update();
+        }).catch(err => {
+          console.warn('[SW] Registration failed:', err);
+        });
+      });
+    }
+  </script>
+</body>
+
+</html>
